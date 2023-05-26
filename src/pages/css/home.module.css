@@ -1,0 +1,27 @@
+.imgcon {
+  width: 100%;
+  text-align: center;
+}
+
+.imgcon img {
+  width: 300px;
+  pointer-events: none;
+}
+
+.alltexts {
+  width: 100%;
+  text-align: center;
+}
+
+.text1 {
+  color: #5db16e;
+}
+.text2 {
+  font-size: 24px;
+  font-family: Comic Sans MS;
+  /* font-style: italic; */
+}
+.text4 {
+  font-size: 18px;
+  font-family: Calibri;
+}

@@ -1,0 +1,60 @@
+.header {
+  width: 100%;
+  height: 70px;
+  background-color: #5db16e;
+}
+.logoimg {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  top: 0;
+  left: 0;
+}
+.logoimg img {
+  position: absolute;
+  width: 100%;
+}
+
+.titlecon {
+  position: absolute;
+  left: 65px;
+  top: 10px;
+}
+.titlecon .qec {
+  font-size: 21px;
+  font-family: Franklin Gothic Medium;
+}
+
+.titlecon .clname {
+  font-size: 18px;
+  font-family: Candara;
+}
+
+.navcon {
+  position: absolute;
+  right: 20px;
+  top: 10px;
+}
+@media only screen and (max-width: 690px) {
+  .header {
+    height: 145px;
+  }
+  .logoimg {
+    width: 100px;
+    height: 100px;
+  }
+  .navcon {
+    position: absolute;
+    right: 0 !important;
+    top: 100px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+  .titlecon {
+    left: 90px !important;
+    top: 15px !important;
+  }
+}

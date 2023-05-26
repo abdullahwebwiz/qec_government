@@ -1,0 +1,70 @@
+.cardcon {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.cardone {
+  width: 400px;
+  height: 400px;
+  border-radius: 20px;
+  margin: 10px;
+  background-color: #5fb770;
+  position: relative;
+}
+
+.cardone .cardimg {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  text-align: center;
+}
+.cardone .cardimg img {
+  width: 200px;
+  height: 200px;
+}
+
+.cardtitle {
+  width: 100%;
+  position: absolute;
+  top: 210px;
+  text-align: center;
+  color: white;
+  font-family: Verdana;
+  font-size: 23px;
+}
+.badge {
+  width: 100%;
+  height: 70px;
+  position: absolute;
+  bottom: 0px;
+  display: flex;
+  justify-content: center;
+  /* align-items: center; */
+}
+.badge img {
+  width: 50px;
+  position: absolute;
+  top: 0;
+}
+.badge p {
+  position: absolute;
+  font-family: Verdana;
+  font-size: 14px;
+  bottom: -10px;
+}
+
+.carddesc {
+  width: 70%;
+  position: absolute;
+  top: 250px;
+  left: 60px;
+  text-align: center;
+  color: black;
+  border: 1px solid black;
+  font-family: Courier New;
+  font-size: 16px;
+  margin: auto;
+}
