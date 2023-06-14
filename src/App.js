@@ -1,5 +1,6 @@
 import "./App.css";
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
+import PlzWait from "./pages/plzwait";
 import {
   BrowserRouter,
   Routes,
@@ -8,6 +9,9 @@ import {
   useNavigate,
   Link,
 } from "react-router-dom";
+import Bsform from "./pages/bsform";
+import Cookies from "js-cookie";
+import axios from "axios";
 const TeacherEvaluationForm = lazy(() =>
   import("./pages/forms/teacherevaluationform")
 );
@@ -21,12 +25,11 @@ const FacultySatisfactionForm = lazy(() =>
 const CourseEvalutionForm = lazy(() =>
   import("./pages/forms/courseevaluationform")
 );
-
 const Home = lazy(() => import("./pages/home"));
-const Home2 = lazy(() => import("./pages/home2"));
 const Contact = lazy(() => import("./pages/contact"));
 const LogIn = lazy(() => import("./pages/login"));
 const SignUp = lazy(() => import("./pages/signup"));
+const Profile = lazy(() => import("./pages/profile"));
 
 function App() {
   return (
@@ -36,23 +39,23 @@ function App() {
           <Route
             index
             element={
-              <Suspense fallback={"Please wait while we load the page.."}>
-                <Home2 />
+              <Suspense fallback={<PlzWait />}>
+                <Home />
               </Suspense>
             }
           />
           <Route
             path="/"
             element={
-              <Suspense fallback={"Please wait while we load the page.."}>
-                <Home2 />
+              <Suspense fallback={<PlzWait />}>
+                <Home />
               </Suspense>
             }
           />
           <Route
             path="/signup"
             element={
-              <Suspense fallback={"Please wait while we load the page.."}>
+              <Suspense fallback={<PlzWait />}>
                 <SignUp />
               </Suspense>
             }
@@ -60,7 +63,7 @@ function App() {
           <Route
             path="/login"
             element={
-              <Suspense fallback={"Please wait while we load the page.."}>
+              <Suspense fallback={<PlzWait />}>
                 <LogIn />
               </Suspense>
             }
@@ -68,7 +71,7 @@ function App() {
           <Route
             path="/contact"
             element={
-              <Suspense fallback={"Please wait while we load the page.."}>
+              <Suspense fallback={<PlzWait />}>
                 <Contact />
               </Suspense>
             }
@@ -76,7 +79,7 @@ function App() {
           <Route
             path="/FacultyCourseForm"
             element={
-              <Suspense fallback={"Please wait while we load the page.."}>
+              <Suspense fallback={<PlzWait />}>
                 <FacultyCourseForm />
               </Suspense>
             }
@@ -84,7 +87,7 @@ function App() {
           <Route
             path="/FacultySatisfactionForm"
             element={
-              <Suspense fallback={"Please wait while we load the page.."}>
+              <Suspense fallback={<PlzWait />}>
                 <FacultySatisfactionForm />
               </Suspense>
             }
@@ -92,7 +95,7 @@ function App() {
           <Route
             path="/CourseEvalutionForm"
             element={
-              <Suspense fallback={"Please wait while we load the page.."}>
+              <Suspense fallback={<PlzWait />}>
                 <CourseEvalutionForm />
               </Suspense>
             }
@@ -100,7 +103,7 @@ function App() {
           <Route
             path="/TeacherEvalutionForm"
             element={
-              <Suspense fallback={"Please wait while we load the page.."}>
+              <Suspense fallback={<PlzWait />}>
                 <TeacherEvaluationForm />
               </Suspense>
             }
@@ -108,11 +111,29 @@ function App() {
           <Route
             path="/DegreeProgramSurveyForm"
             element={
-              <Suspense fallback={"Please wait while we load the page.."}>
+              <Suspense fallback={<PlzWait />}>
                 <DegreeProgramSurveyForm />
               </Suspense>
             }
           />
+          <Route
+            path="/profile"
+            element={
+              <Suspense fallback={<PlzWait />}>
+                <Profile />
+              </Suspense>
+            }
+          />
+
+          <Route
+            path="/bsform"
+            element={
+              <Suspense fallback={<PlzWait />}>
+                <Bsform />
+              </Suspense>
+            }
+          />
+
           <Route
             path="*"
             element={

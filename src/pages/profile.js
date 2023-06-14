@@ -1,13 +1,12 @@
-import { memo, useState, useEffect } from "react";
+import { memo, useEffect, useState, lazy } from "react";
 import Header from "../components/header/header";
-import * as React from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
+import CssBaseline from "@mui/material/CssBaseline";
+import TextField from "@mui/material/TextField";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import Link from "@mui/material/Link";
@@ -21,8 +20,7 @@ import IconButton from "@mui/material/IconButton";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Cookies from "js-cookie";
-import PlzWait from "./plzwait";
-
+const PlzWait = lazy(() => import("./plzwait"));
 const theme = createTheme({
   components: {
     MuiTextField: {
@@ -44,13 +42,17 @@ const theme = createTheme({
     },
   },
 });
-let token = Cookies.get("token");
-const LogIn = () => {
+
+const Profile = () => {
   let navigate = useNavigate();
+  let token = Cookies.get("token");
   let [isloggedin, setisloggedin] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [name, setname] = useState("");
+  const [email, setemail] = useState("");
+  const [phone, setphone] = useState("");
+  const [nic, setnic] = useState("");
 
   useEffect(() => {
     if (token) {
@@ -71,52 +73,59 @@ const LogIn = () => {
     }
   }, [token]);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (mobile && password) {
+
+
+  useEffect(() => {
+    if (isloggedin == "yes") {
       axios
-        .post("http://164.92.193.40:3002/v1/login", {
-          mobile: mobile,
-          password: password,
-          realm: "qec",
-          platform: "web",
+        .get("http://164.92.193.40:3002/v1/users/me", {
+          headers: {
+            Authorization: `Bearer ` + token,
+          },
         })
         .then((res) => {
-          console.log(res);
-          const expirationHours = 8;
-          const currentDate = new Date();
-          currentDate.setTime(
-            currentDate.getTime() + expirationHours * 60 * 60 * 1000
-          );
-          Cookies.set("token", res.data.token, { expires: currentDate });
-          navigate("/");
-          window.location.reload();
+          setname(res.data.name);
+          setemail(res.data.email);
+          setnic(res.data.nic);
+          setphone(res.data.mobile);
         })
         .catch((err) => {
           console.log(err);
-          toast.warn("Wrong Password");
         });
-    } else {
-      toast.warning("Please fill all fields.");
     }
-  };
+  }, [isloggedin]);
 
-  const handleTogglePasswordVisibility = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword);
+  const handleUpdate = (event) => {
+    event.preventDefault();
+    return null;
   };
 
   if (isloggedin == "") {
     return <PlzWait />;
-  } else if (isloggedin == "yes") {
-    return <Navigate to={"/"} />;
   } else if (isloggedin == "no") {
+    return <Navigate to={"/"} />;
+  } else if (isloggedin == "yes") {
     return (
       <>
-        <ToastContainer />
         <Header />
-
+        <ToastContainer
+          position="top-center"
+          autoClose={4000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
         <ThemeProvider theme={theme}>
-          <Container component="main" maxWidth="xs" style={{}}>
+          <Container
+            component="main"
+            maxWidth="xs"
+            style={{ marginTop: "-50px", marginBottom: "100px" }}
+          >
             <CssBaseline />
             <Box
               sx={{
@@ -128,9 +137,27 @@ const LogIn = () => {
             >
               <Avatar sx={{ m: 1, bgcolor: "#5db16e" }} />
               <Typography component="h1" variant="h5">
-                Log In
+                Profile
               </Typography>
-              <Box component="form" noValidate sx={{ mt: 1 }}>
+              <Box
+                component="form"
+                onSubmit={handleUpdate}
+                noValidate
+                sx={{ mt: 1 }}
+              >
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="name"
+                  label="Name"
+                  name="name"
+                  autoComplete="name"
+                  autoFocus
+                  value={name}
+                  disabled
+                  // onChange={(e) => setname(e.target.value)}
+                />
                 <TextField
                   margin="normal"
                   required
@@ -139,74 +166,45 @@ const LogIn = () => {
                   label="Phone Number"
                   name="phonenumber"
                   autoComplete="number"
-                  autoFocus
-                  value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
+                  value={phone}
+                  disabled
+                  // onChange={(e) => setphone(e.target.value)}
                 />
                 <TextField
                   margin="normal"
                   required
                   fullWidth
-                  name="password"
-                  label="Password"
-                  type={showPassword ? "text" : "password"}
-                  id="password"
-                  autoComplete="current-password"
-                  InputProps={{
-                    endAdornment: (
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleTogglePasswordVisibility}
-                        edge="end"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    ),
-                  }}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  id="email"
+                  label="email"
+                  name="email"
+                  autoComplete="email"
+                  value={email}
+                  disabled
+                  // onChange={(e) => setemail(e.target.value)}
+                />
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="cnic"
+                  label="CNIC"
+                  name="cnic"
+                  autoComplete="cnic"
+                  value={nic}
+                  disabled
+                  // onChange={(e) => setnic(e.target.value)}
                 />
                 <Button
                   type="submit"
                   fullWidth
                   variant="contained"
                   sx={{ mt: 3, mb: 2, bgcolor: "#5db16e" }}
-                  onClick={handleSubmit}
+                  onClick={handleUpdate}
                 >
-                  Log In
+                  Update
                 </Button>
               </Box>
             </Box>
-            <div style={{ textAlign: "center" }}>
-              <Button
-                variant="contained"
-                size="small"
-                style={{
-                  margin: "10px",
-                  backgroundColor: "#DE7070",
-                  color: "white",
-                }}
-                onClick={() => {
-                  navigate("/contact");
-                }}
-              >
-                forgot Password?
-              </Button>
-              <Button
-                variant="contained"
-                size="small"
-                style={{
-                  margin: "10px",
-                  backgroundColor: "green",
-                  color: "white",
-                }}
-                onClick={() => {
-                  navigate("/signup");
-                }}
-              >
-                sign up
-              </Button>
-            </div>
           </Container>
         </ThemeProvider>
       </>
@@ -214,4 +212,4 @@ const LogIn = () => {
   }
 };
 
-export default memo(LogIn);
+export default memo(Profile);

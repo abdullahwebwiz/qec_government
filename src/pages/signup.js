@@ -1,247 +1,450 @@
-import { memo, useState } from "react";
+import { memo, useState, useEffect, lazy } from "react";
 import Header from "../components/header/header";
 import * as React from "react";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
+import { useNavigate, Navigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import Link from "@mui/material/Link";
-import Grid from "@mui/material/Grid";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useNavigate } from "react-router-dom";
-import IconButton from "@mui/material/IconButton";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import Cookies from "js-cookie";
+import Avatar from "@mui/material/Avatar";
+import {
+  TextField,
+  Button,
+  Typography,
+  Grid,
+  Container,
+  InputAdornment,
+  IconButton,
+  Select,
+  MenuItem,
+} from "@mui/material";
+import { AccountCircle, Visibility, VisibilityOff } from "@mui/icons-material";
 
-const theme = createTheme({
-  components: {
-    MuiTextField: {
-      defaultProps: {
-        InputLabelProps: {
-          style: {
-            color: "green",
-          },
-        },
-      },
-      styleOverrides: {
-        root: {
-          "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-            {
-              borderColor: "#5db16e",
-            },
-        },
-      },
-    },
-  },
-});
+const PlzWait = lazy(() => import("./plzwait"));
+let token = Cookies.get("token");
 
 const SignUp = () => {
   let navigate = useNavigate();
-
+  let [whatuser, setwhatuser] = useState("");
+  let [isloggedin, setisloggedin] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [name, setname] = useState("");
-  const [email, setemail] = useState("");
-  const [phone, setphone] = useState("");
-  const [nic, setnic] = useState("");
-  const [password, setpassword] = useState("");
-  const [cpassword, setcpassword] = useState("");
+  const [formData, setFormData] = useState({
+    personalNumber: "",
+    enrollmentNumber: "",
+    name: "",
+    phone: "",
+    email: "",
+    cnic: "",
+    college: "",
+    department: "",
+    fatherName: "",
+    batch: "",
+    password: "",
+  });
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (name && email && phone && nic && password && cpassword) {
-      if (password == cpassword) {
-        axios.post("", {
-          name: name,
-          email: email,
-          phone: phone,
-          nic: nic,
-          password: password,
+  useEffect(() => {
+    if (token) {
+      axios
+        .get("http://164.92.193.40:3002/v1/users/me", {
+          headers: {
+            Authorization: `Bearer ` + token,
+          },
+        })
+        .then((res) => {
+          setisloggedin("yes");
+        })
+        .catch((err) => {
+          setisloggedin("no");
         });
-      } else {
-        toast.warning("Passwords do not Match!");
-      }
     } else {
-      toast.warning("Please fill all fields.");
+      setisloggedin("no");
     }
-  };
+  }, [token]);
 
-  const handleTogglePasswordVisibility = () => {
+  const togglePasswordVisibility = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
   };
 
-  const handleToggleConfirmPasswordVisibility = () => {
-    setShowConfirmPassword(
-      (prevShowConfirmPassword) => !prevShowConfirmPassword
-    );
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (
+      formData.name &&
+      formData.email &&
+      formData.phone &&
+      formData.cnic &&
+      formData.college &&
+      formData.department &&
+      formData.password
+    )
+      if (
+        (whatuser == "stu" && formData.batch && formData.enrollmentNumber) ||
+        (whatuser == "tea" && formData.personalNumber)
+      ) {
+        if (formData.password.length >= 8) {
+          let data = {
+            userid:
+              whatuser == "stu"
+                ? formData.enrollmentNumber
+                : formData.personalNumber,
+            name: formData.name,
+            mobile: formData.phone,
+            email: formData.email,
+            nic: formData.cnic,
+            password: formData.password,
+            department: formData.department,
+            college: formData.college,
+            batch: formData.batch.toString(),
+          };
+          const { batch, ...newdata } = data;
+          console.log(whatuser == "stu" ? data : newdata);
+          axios
+            .post(
+              "http://164.92.193.40:3002/v1/users",
+              whatuser == "stu" ? data : newdata
+            )
+            .then((res) => {
+              if (res.status >= 200 || res.status <= 299) {
+                navigate("/login");
+                toast.success("Successfully Signup.");
+              }
+            })
+            .catch((err) => {
+              console.log(err);
+              toast.warn("Something went wrong.");
+            });
+        } else {
+          toast.warn("Password must at least 8 characters long.");
+        }
+      } else {
+        toast.error("Please fill all fields.");
+      }
+    else {
+      toast.error("Please fill all fields.");
+    }
   };
 
-  return (
-    <>
-      <Header />
-      <ToastContainer
-        position="top-center"
-        autoClose={4000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-      />
-      <ThemeProvider theme={theme}>
-        <Container
-          component="main"
-          maxWidth="xs"
-          style={{ marginTop: "-50px", marginBottom: "100px" }}
-        >
-          <CssBaseline />
-          <Box
-            sx={{
-              marginTop: 8,
+  const handleChange = (n, v) => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [n]: v,
+    }));
+  };
+
+  if (isloggedin == "") {
+    return <PlzWait />;
+  } else if (isloggedin == "yes") {
+    return <Navigate to={"/"} />;
+  } else if (isloggedin == "no") {
+    return (
+      <>
+        <ToastContainer />
+        <Header />
+        {whatuser == "" ? (
+          <div
+            style={{
+              width: "100%",
+              marginTop: "100px",
               display: "flex",
               flexDirection: "column",
+              flexWrap: "nowrap",
+              // justifyContent: "center",
               alignItems: "center",
             }}
           >
-            <Avatar sx={{ m: 1, bgcolor: "#5db16e" }} />
-            <Typography component="h1" variant="h5">
-              Sign Up
-            </Typography>
-            <Box
-              component="form"
-              onSubmit={handleSubmit}
-              noValidate
-              sx={{ mt: 1 }}
+            <div
+              style={{
+                width: "300px",
+                height: "150px",
+                boxShadow: "3px 3px 10px green",
+                backgroundColor: "#5db16e",
+                margin: "10px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                color: "white",
+                fontSize: "24px",
+                cursor: "pointer",
+                borderRadius: "20px",
+                fontWeight: "bold",
+              }}
+              onClick={() => {
+                setwhatuser("tea");
+              }}
             >
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="name"
-                label="Name"
-                name="name"
-                autoComplete="name"
-                autoFocus
-                value={name}
-                onChange={(e) => setname(e.target.value)}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="phonenumber"
-                label="Phone Number"
-                name="phonenumber"
-                autoComplete="number"
-                value={phone}
-                onChange={(e) => setphone(e.target.value)}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="email"
-                label="email"
-                name="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setemail(e.target.value)}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="cnic"
-                label="CNIC"
-                name="cnic"
-                autoComplete="cnic"
-                value={nic}
-                onChange={(e) => setnic(e.target.value)}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type={showPassword ? "text" : "password"}
-                id="password"
-                autoComplete="current-password"
-                InputProps={{
-                  endAdornment: (
-                    <IconButton
-                      onClick={handleTogglePasswordVisibility}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  ),
-                }}
-                value={password}
-                onChange={(e) => setpassword(e.target.value)}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="confirmpassword"
-                label="Confirm Password"
-                type={showConfirmPassword ? "text" : "password"}
-                id="confirmpassword"
-                autoComplete="new-password"
-                InputProps={{
-                  endAdornment: (
-                    <IconButton
-                      onClick={handleToggleConfirmPasswordVisibility}
-                      edge="end"
-                    >
-                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  ),
-                }}
-                value={cpassword}
-                onChange={(e) => setcpassword(e.target.value)}
-              />
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2, bgcolor: "#5db16e" }}
-                onClick={handleSubmit}
-              >
-                Sign Up
-              </Button>
-            </Box>
-          </Box>
-          <div
-            style={{
-              textAlign: "right",
-              color: " #3399ff",
-              textDecoration: "underline",
-              fontSize: "15px",
-              cursor: "pointer",
-            }}
-            onClick={() => {
-              navigate("/login");
-            }}
-          >
-            Already have account? LogIn
+              I am a Teacher
+            </div>
+            <div
+              style={{
+                width: "300px",
+                height: "150px",
+                boxShadow: "3px 3px 10px green",
+                backgroundColor: "#5db16e",
+                margin: "10px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                color: "white",
+                fontSize: "24px",
+                cursor: "pointer",
+                borderRadius: "20px",
+                fontWeight: "bold",
+              }}
+              onClick={() => {
+                setwhatuser("stu");
+              }}
+            >
+              I am a Student
+            </div>
           </div>
-        </Container>
-      </ThemeProvider>
-    </>
-  );
+        ) : (
+          <>
+            {" "}
+            <Container maxWidth="md" style={{ marginTop: "20px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "20px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Avatar sx={{ m: 1, bgcolor: "green" }} />
+                  <Typography component="h1" variant="h5">
+                    Sign Up
+                  </Typography>
+                </div>
+              </div>
+              <form onSubmit={handleSubmit}>
+                <Grid container spacing={1}>
+                  {whatuser == "tea" ? (
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Personal Number"
+                        name="personalNumber"
+                        value={formData.personalNumber}
+                        onChange={(e) => {
+                          handleChange(e.target.name, e.target.value);
+                        }}
+                        fullWidth
+                      />
+                    </Grid>
+                  ) : (
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Enrollment Number"
+                        name="enrollmentNumber"
+                        value={formData.enrollmentNumber}
+                        onChange={(e) => {
+                          handleChange(e.target.name, e.target.value);
+                        }}
+                        fullWidth
+                      />
+                    </Grid>
+                  )}
+
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Name"
+                      name="name"
+                      value={formData.name}
+                      onChange={(e) => {
+                        handleChange(e.target.name, e.target.value);
+                      }}
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={(e) => {
+                        handleChange(e.target.name, e.target.value);
+                      }}
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Email"
+                      name="email"
+                      value={formData.email}
+                      onChange={(e) => {
+                        handleChange(e.target.name, e.target.value);
+                      }}
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="CNIC"
+                      name="cnic"
+                      value={formData.cnic}
+                      onChange={(e) => {
+                        handleChange(e.target.name, e.target.value);
+                      }}
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      select
+                      label="College"
+                      name="college"
+                      value={formData.college}
+                      onChange={(e) => {
+                        handleChange(e.target.name, e.target.value);
+                      }}
+                      fullWidth
+                    >
+                      {[
+                        "GPGC Kohat",
+                        "GGPGC Kohat",
+                        "GDC KDA Kohat",
+                        "GGDC KDA Kohat",
+                        "GDC Gumbat Kohat",
+                        "GDC Hangu",
+                      ].map((college) => (
+                        <MenuItem key={college} value={college}>
+                          {college}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      select
+                      label="Department"
+                      name="department"
+                      value={formData.department}
+                      onChange={(e) => {
+                        handleChange(e.target.name, e.target.value);
+                      }}
+                      fullWidth
+                    >
+                      {[
+                        "Botany",
+                        "Chemistry",
+                        "Computer Science",
+                        "Economics",
+                        "English",
+                        "General",
+                        "Geography",
+                        "Mathematics",
+                        "Physics",
+                        "Political Science",
+                        "Statistics",
+                        "Urdu",
+                        "Zoology",
+                      ].map((department) => (
+                        <MenuItem key={department} value={department}>
+                          {department}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                  {whatuser == "stu" ? (
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        select
+                        label="Batch"
+                        name="batch"
+                        value={formData.batch}
+                        onChange={(e) => {
+                          handleChange(e.target.name, e.target.value);
+                        }}
+                        fullWidth
+                      >
+                        {[2019, 2020, 2021, 2022].map((batch) => (
+                          <MenuItem key={batch} value={batch}>
+                            {batch}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+                  ) : (
+                    ""
+                  )}
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={(e) => {
+                        handleChange(e.target.name, e.target.value);
+                      }}
+                      fullWidth
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={togglePasswordVisibility}
+                              edge="end"
+                            >
+                              {showPassword ? (
+                                <VisibilityOff />
+                              ) : (
+                                <Visibility />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
+                  <Grid
+                    item
+                    xs={12}
+                    align="center"
+                    style={{ marginTop: "30px" }}
+                  >
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      // fullWidth
+                      sx={{
+                        backgroundColor: "green",
+                        fontSize: "16px",
+                        padding: "5px",
+                        width: "300px",
+                      }}
+                    >
+                      Sign Up
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} align="center">
+                    <Typography
+                      variant="body2"
+                      style={{
+                        color: "blue",
+                        textDecoration: "underline",
+                        cursor: "pointer",
+                      }}
+                      onClick={() => {
+                        navigate("/login");
+                        // navigate('/');
+                      }}
+                    >
+                      Already have an account? Log in.
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </form>
+            </Container>
+          </>
+        )}
+      </>
+    );
+  }
 };
 
 export default memo(SignUp);

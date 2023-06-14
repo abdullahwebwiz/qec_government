@@ -32,6 +32,7 @@
 }
 .imgcon img {
   width: 95%;
+  pointer-events: none;
 }
 
 .carddesc {

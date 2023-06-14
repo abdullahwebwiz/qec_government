@@ -1,21 +1,22 @@
 import { useEffect, useState } from "react";
-import styles from "./box1.module.css";
-const Box1 = ({ title, fun, id, clearboxes }) => {
+import styles from "./box2.module.css";
+const Box2 = ({ fun, clearboxes }) => {
   let [tc, settc] = useState("");
   useEffect(() => {
     if (clearboxes) {
       settc("");
     }
   }, [clearboxes]);
+  
   return (
     <>
       <div className={styles.mainbox1}>
-        <div className={styles.mainbox1header}>{title}</div>
+        <div className={styles.mainbox1header}></div>
         <div className={styles.mcqcon}>
           <div
             onClick={() => {
               settc("Strongly Agree");
-              fun(title, "1", id);
+              fun(1);
             }}
           >
             Strongly Agree
@@ -24,7 +25,7 @@ const Box1 = ({ title, fun, id, clearboxes }) => {
           <div
             onClick={() => {
               settc("Agree");
-              fun(title, "2", id);
+              fun(2);
             }}
           >
             Agree {tc == "Agree" ? <img src={"/tick.png"} /> : ""}
@@ -32,7 +33,7 @@ const Box1 = ({ title, fun, id, clearboxes }) => {
           <div
             onClick={() => {
               settc("Neutral");
-              fun(title, "3", id);
+              fun(3);
             }}
           >
             Neutral {tc == "Neutral" ? <img src={"/tick.png"} /> : ""}
@@ -40,7 +41,7 @@ const Box1 = ({ title, fun, id, clearboxes }) => {
           <div
             onClick={() => {
               settc("Disagree");
-              fun(title, "4", id);
+              fun(4);
             }}
           >
             Disagree {tc == "Disagree" ? <img src={"/tick.png"} /> : ""}
@@ -48,7 +49,7 @@ const Box1 = ({ title, fun, id, clearboxes }) => {
           <div
             onClick={() => {
               settc("Strongly Disagree");
-              fun(title, "5", id);
+              fun(5);
             }}
           >
             Strongly Disagree{" "}
@@ -59,4 +60,4 @@ const Box1 = ({ title, fun, id, clearboxes }) => {
     </>
   );
 };
-export default Box1;
+export default Box2;
