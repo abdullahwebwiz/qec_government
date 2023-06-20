@@ -26,6 +26,7 @@ const CourseEvalutionForm = () => {
   let [whatsem, setwhatsem] = useState("");
   let [wait, setwait] = useState(false);
   let [mainresult, setmainresult] = useState([]);
+  let [xx, setxx] = useState(0);
   let navigate = useNavigate();
 
   useEffect(() => {
@@ -114,36 +115,43 @@ const CourseEvalutionForm = () => {
   }, [isloggedin]);
 
   useEffect(() => {
-    if (localStorage.getItem("courseevaluationform_qn")) {
-      setqn(parseInt(localStorage.getItem("courseevaluationform_qn")));
-    }
-  }, [localStorage.getItem("courseevaluationform_qn")]);
-
-  useEffect(() => {
     if (questions) {
       setquestion(questions[qn].question);
       setqid(questions[qn]._id);
     }
   }, [qn, questions]);
 
-  useEffect(() => {
-    console.log(ratings);
-  }, [ratings]);
-
   function addrating(course, cr, id) {
-    let newValue = { courseId: id, grade: parseInt(cr) };
+    let newValue = {
+      ...{
+        studentId: sid,
+        questionId: qid,
+        collegeName: college,
+        semesterType: whatsem,
+        semesterYear: new Date().getFullYear().toString(),
+        department: department,
+        evaluationType: "courseEvaluation",
+        batch: batch,
+      },
+      courseId: id,
+      grade: parseInt(cr),
+    };
+
     const existingIndex = ratings.findIndex(
       (item) => item.courseId === newValue.courseId
     );
+
     if (existingIndex !== -1) {
       const newArray = [...ratings];
       newArray[existingIndex] = newValue;
       setratings(newArray);
     } else {
       setratings((prevArray) => [...prevArray, newValue]);
-    }res.data.courses
+    }
   }
-
+  useEffect(() => {
+    console.log(mainresult);
+  }, [mainresult, qn, xx]);
   const submitratings = () => {
     if (
       ratings.length == subjects.length &&
@@ -153,35 +161,30 @@ const CourseEvalutionForm = () => {
       department &&
       batch
     ) {
-      let data = {
-        studentId: sid,
-        questionId: qid,
-        collegeName: college,
-        semesterType: whatsem,
-        semesterYear: new Date().getFullYear().toString(),
-        department: department,
-        evaluationType: "courseEvaluation",
-        ratings: ratings,
-        batch: batch,
-      };
-      console.log(data);
-      axios
-        .post("http://164.92.193.40:3001/v1/ratings/courseRating", data)
-        .then((res) => {
-          if (qn + 1 == questions.length) {
-            navigate("/");
-          } else {
-            console.log(res);
-            setqn(qn + 1);
-            localStorage.setItem("courseevaluationform_qn", qn + 1);
-            setclearboxes(qn + 1);
-            setratings([]);
-            setwait(false);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      mainresult.push(...ratings);
+      setmainresult(mainresult);
+      setclearboxes(qn + 1);
+      setratings([]);
+      setwait(false);
+      setxx(xx + 1);
+      if (qn + 1 != questions.length) {
+        setqn(qn + 1);
+      } else {
+        axios
+          .post("http://164.92.193.40:3001/v1/ratings/courseRating", mainresult)
+          .then((res) => {
+            toast.success("Form successfully submitted");
+            setTimeout(() => {
+              navigate("/");
+            }, 800);
+          })
+          .catch((err) => {
+            toast.error("Something went wrong");
+            setTimeout(() => {
+              navigate("/");
+            }, 800);
+          });
+      }
     } else {
       toast.warn("Please fill all fields");
     }

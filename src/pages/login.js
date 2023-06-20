@@ -22,7 +22,8 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Cookies from "js-cookie";
 import PlzWait from "./plzwait";
-
+import "react-phone-number-input/style.css";
+import PhoneInput from "react-phone-number-input";
 const theme = createTheme({
   components: {
     MuiTextField: {
@@ -131,6 +132,7 @@ const LogIn = () => {
                 Log In
               </Typography>
               <Box component="form" noValidate sx={{ mt: 1 }}>
+
                 <TextField
                   margin="normal"
                   required

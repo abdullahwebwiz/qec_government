@@ -25,6 +25,8 @@ const TeacherEvaluationForm = () => {
   let [whatsem, setwhatsem] = useState("");
   let [wait, setwait] = useState(false);
   let [college, setcollege] = useState("");
+  let [mainresult, setmainresult] = useState([]);
+  let [xx, setxx] = useState(0);
   let navigate = useNavigate();
 
   useEffect(() => {
@@ -117,20 +119,32 @@ const TeacherEvaluationForm = () => {
   }, [isloggedin]);
 
   useEffect(() => {
-    if (localStorage.getItem("teacherevaluationform_qn")) {
-      setqn(parseInt(localStorage.getItem("teacherevaluationform_qn")));
-    }
-  }, [localStorage.getItem("teacherevaluationform_qn")]);
-
-  useEffect(() => {
     if (questions) {
       setquestion(questions[qn].question);
       setqid(questions[qn]._id);
     }
   }, [qn, questions]);
 
-  function addrating(teacher, cr, i) {
-    let newValue = { teacherId: i, grade: parseInt(cr) };
+  useEffect(() => {
+    console.log(mainresult);
+  }, [mainresult, qn, xx]);
+
+  function addrating(course, cr, id) {
+    let newValue = {
+      ...{
+        studentId: sid,
+        questionId: qid,
+        collegeName: college,
+        semesterType: whatsem,
+        semesterYear: new Date().getFullYear().toString(),
+        department: department,
+        evaluationType: "teacherEvaluation",
+        batch: batch,
+      },
+      teacherId: id,
+      grade: parseInt(cr),
+    };
+
     const existingIndex = ratings.findIndex(
       (item) => item.teacherId === newValue.teacherId
     );
@@ -150,39 +164,35 @@ const TeacherEvaluationForm = () => {
       sid &&
       whatsem &&
       department &&
-      batch &&
-      college
+      batch
     ) {
-      setwait(true);
-      let data = {
-        studentId: sid,
-        questionId: qid,
-        collegeName: college,
-        semesterType: whatsem,
-        semesterYear: new Date().getFullYear().toString(),
-        department: department,
-        evaluationType: "teacherEvaluation",
-        ratings: ratings,
-        batch: batch,
-      };
-      console.log(data);
-      axios
-        .post("http://164.92.193.40:3001/v1/ratings/teacherRating", data)
-        .then((res) => {
-          if (qn + 1 == questions.length) {
-            navigate("/");
-          } else {
-            console.log(res);
-            setqn(qn + 1);
-            localStorage.setItem("teacherevaluationform_qn", qn + 1);
-            setclearboxes(qn + 1);
-            setratings([]);
-            setwait(false);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      mainresult.push(...ratings);
+      setmainresult(mainresult);
+      setclearboxes(qn + 1);
+      setratings([]);
+      setwait(false);
+      setxx(xx + 1);
+      if (qn + 1 != questions.length) {
+        setqn(qn + 1);
+      } else {
+        axios
+          .post(
+            "http://164.92.193.40:3001/v1/ratings/teacherRating",
+            mainresult
+          )
+          .then((res) => {
+            toast.success("Form successfully submitted");
+            setTimeout(() => {
+              navigate("/");
+            }, 800);
+          })
+          .catch((err) => {
+            toast.error("Something went wrong");
+            setTimeout(() => {
+              navigate("/");
+            }, 800);
+          });
+      }
     } else {
       toast.warn("Please fill all fields");
     }
