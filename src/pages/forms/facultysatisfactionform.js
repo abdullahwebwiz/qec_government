@@ -62,11 +62,6 @@ const FacultySatisfactionForm = () => {
         setwhatsem(res.data[0].semester.evaluationSemester);
       });
   }, [token]);
-  useEffect(() => {
-    if (localStorage.getItem("facultysatisfactionform_qn")) {
-      setqn(parseInt(localStorage.getItem("facultysatisfactionform_qn")));
-    }
-  }, [localStorage.getItem("facultysatisfactionform_qn")]);
 
   useEffect(() => {
     if (questions) {

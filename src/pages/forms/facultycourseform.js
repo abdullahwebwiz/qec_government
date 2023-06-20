@@ -24,7 +24,8 @@ const FacultyCourseForm = () => {
   let [college, setcollege] = useState("");
   let [whatsem, setwhatsem] = useState("");
   let [ratings, setratings] = useState([]);
-  console.log(subjects);
+  let [mainresult, setmainresult] = useState([]);
+  let [xx, setxx] = useState(0);
   let navigate = useNavigate();
 
   useEffect(() => {
@@ -112,12 +113,6 @@ const FacultyCourseForm = () => {
   }, [isloggedin]);
 
   useEffect(() => {
-    if (localStorage.getItem("facultycourse_qn")) {
-      setqn(parseInt(localStorage.getItem("facultycourse_qn")));
-    }
-  }, [localStorage.getItem("facultycourse_qn")]);
-
-  useEffect(() => {
     if (questions) {
       setquestion(questions[qn].question);
       setqid(questions[qn]._id);
@@ -125,10 +120,22 @@ const FacultyCourseForm = () => {
   }, [qn, questions]);
 
   function addrating(course, cr, id) {
-    let newValue = { courseId: id.toString(), grade: parseInt(cr) };
+    let newValue = {
+      teacherId: tid,
+      questionId: qid,
+      collegeName: college,
+      semesterType: whatsem,
+      semesterYear: new Date().getFullYear().toString(),
+      department: department,
+      evaluationType: "teacherEvaluation",
+      courseId: id.toString(),
+      grade: parseInt(cr),
+    };
+
     const existingIndex = ratings.findIndex(
       (item) => item.courseId === newValue.courseId
     );
+
     if (existingIndex !== -1) {
       const newArray = [...ratings];
       newArray[existingIndex] = newValue;
@@ -138,39 +145,47 @@ const FacultyCourseForm = () => {
     }
   }
 
+  useEffect(() => {
+    console.log(mainresult);
+  }, [mainresult, qn, xx]);
   const submitratings = () => {
-    if (ratings.length == subjects.length && qid && tid && department) {
-      let data = {
-        teacherId: tid,
-        questionId: qid,
-        collegeName: college,
-        semesterType: whatsem,
-        semesterYear: new Date().getFullYear().toString(),
-        department: department,
-        evaluationType: "facultyCourseReview",
-        ratings: ratings,
-      };
-      console.log(data);
-      axios
-        .post(
-          "http://164.92.193.40:3001/v1/ratings/facultyCourseReviewRating",
-          data
-        )
-        .then((res) => {
-          if (qn + 1 == questions.length) {
-            navigate("/");
-          } else {
-            console.log(res);
-            setqn(qn + 1);
-            localStorage.setItem("courseevaluationform_qn", qn + 1);
-            setclearboxes(qn + 1);
-            setratings([]);
-            setwait(false);
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+    if (
+      ratings.length == subjects.length &&
+      qid &&
+      tid &&
+      whatsem &&
+      department
+    ) {
+      // mainresult.push(...ratings);
+      // setmainresult(mainresult);
+      setclearboxes(qn + 1);
+      setratings([]);
+      setxx(xx + 1);
+      setwait(false);
+
+      if (qn + 1 != questions.length) {
+        setqn(qn + 1);
+      } else {
+        axios
+          .post(
+            "http://164.92.193.40:3001/v1/ratings/facultyCourseReviewRating",
+            ratings
+          )
+          .then((res) => {
+            toast.success("Form successfully submitted");
+            setTimeout(() => {
+              navigate("/");
+            }, 800);
+            // console.log(res);
+          })
+          .catch((err) => {
+            toast.error("Something went wrong");
+            setTimeout(() => {
+              navigate("/");
+            }, 800);
+            // console.log(err);
+          });
+      }
     } else {
       toast.warn("Please fill all fields");
     }
